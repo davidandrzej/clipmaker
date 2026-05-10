@@ -118,6 +118,8 @@ def main():
     parser.add_argument("--pause", type=float, default=2.0, help="Pause duration in seconds (default: 2.0)")
     parser.add_argument("--style", choices=["dark", "light"], default="dark",
                         help="dark = black bg / white fg, light = white bg / black fg (default: dark)")
+    parser.add_argument("--invert-source", action="store_true",
+                        help="Invert grayscale before dithering (negative dither effect)")
     parser.add_argument("--mp4", action="store_true", help="Also produce MP4 via ffmpeg")
     parser.add_argument("-o", "--output", default=None, help="Output filename (default: <input>-loop.gif)")
     args = parser.parse_args()
@@ -135,6 +137,10 @@ def main():
     gray = load_and_scale(str(input_path), args.width)
     h, w = gray.shape
     print(f"  Scaled to {w}x{h}")
+
+    if args.invert_source:
+        print("Inverting source (negative) ...")
+        gray = 255.0 - gray
 
     print("Dithering ...")
     dithered = floyd_steinberg_dither(gray)
