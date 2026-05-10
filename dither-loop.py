@@ -145,14 +145,16 @@ def main():
     print("Dithering ...")
     dithered = floyd_steinberg_dither(gray)
 
-    # Enforce the requested background color (style)
-    dithered_bg = int(dithered[0, 0])
-    want_bg = 0 if args.style == "dark" else 255
-    if dithered_bg != want_bg:
-        print("Inverting to match style ...")
-        base = invert(dithered)
-    else:
-        base = dithered
+    # Enforce the requested background color (style), unless
+    # --invert-source was used (the inversion intentionally changes the
+    # background — e.g. white bg photo becomes black bg after inversion).
+    if not args.invert_source:
+        dithered_bg = int(dithered[0, 0])
+        want_bg = 0 if args.style == "dark" else 255
+        if dithered_bg != want_bg:
+            print("Inverting to match style ...")
+            dithered = invert(dithered)
+    base = dithered
     bg_color = int(base[0, 0])
     print(f"  Style: {args.style}, background color: {bg_color}")
 
