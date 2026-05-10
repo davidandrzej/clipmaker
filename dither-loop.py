@@ -19,12 +19,11 @@ import numpy as np
 from PIL import Image
 
 
-def load_and_scale(path: str, max_width: int) -> np.ndarray:
-    """Load image, composite onto black if alpha, convert to grayscale, scale."""
+def load_and_scale(path: str, max_width: int, bg_color: int = 0) -> np.ndarray:
+    """Load image, composite onto bg_color if alpha, convert to grayscale, scale."""
     img = Image.open(path)
-    # Composite onto black background if there's an alpha channel
     if img.mode in ("RGBA", "LA", "PA"):
-        bg = Image.new("RGB", img.size, (0, 0, 0))
+        bg = Image.new("RGB", img.size, (bg_color, bg_color, bg_color))
         bg.paste(img, mask=img.split()[-1])
         img = bg
     img = img.convert("L")
@@ -133,8 +132,11 @@ def main():
     frame_delay_ms = round(1000 / args.fps)
     pause_ms = round(args.pause * 1000)
 
+    # When --invert-source, composite alpha onto white so that after
+    # inversion the background becomes black.
+    alpha_bg = 255 if args.invert_source else 0
     print(f"Loading {input_path} ...")
-    gray = load_and_scale(str(input_path), args.width)
+    gray = load_and_scale(str(input_path), args.width, bg_color=alpha_bg)
     h, w = gray.shape
     print(f"  Scaled to {w}x{h}")
 
